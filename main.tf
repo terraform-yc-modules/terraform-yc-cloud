@@ -79,6 +79,13 @@ resource "yandex_billing_cloud_binding" "this" {
   cloud_id           = yandex_resourcemanager_cloud.this.id
 }
 
+# Temporary workaround until the issue of cloud creation by the Terraform provider is resolved.
+resource "time_sleep" "this" {
+  create_duration = "60s"
+
+  depends_on = [yandex_resourcemanager_cloud.this]
+}
+
 resource "yandex_resourcemanager_folder" "this" {
   for_each = {
     for folder in var.folders : folder.name => folder
@@ -90,7 +97,8 @@ resource "yandex_resourcemanager_folder" "this" {
   labels      = each.value.labels
 
   depends_on = [
-    yandex_billing_cloud_binding.this
+    yandex_billing_cloud_binding.this,
+    time_sleep.this
   ]
 }
 

@@ -6,5 +6,10 @@ terraform {
       source  = "yandex-cloud/yandex"
       version = "0.93"
     }
+
+    time = {
+      source  = "hashicorp/time"
+      version = "0.9.1"
+    }
   }
 }

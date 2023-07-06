@@ -28,13 +28,15 @@ See [examples section](./examples/)
 | Name | Version |
 |------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.3.0 |
+| <a name="requirement_time"></a> [time](#requirement\_time) | 0.9.1 |
 | <a name="requirement_yandex"></a> [yandex](#requirement\_yandex) | 0.93 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| <a name="provider_yandex"></a> [yandex](#provider\_yandex) | 0.93 |
+| <a name="provider_time"></a> [time](#provider\_time) | 0.9.1 |
+| <a name="provider_yandex"></a> [yandex](#provider\_yandex) | 0.93.0 |
 
 ## Modules
 
@@ -44,6 +46,7 @@ No modules.
 
 | Name | Type |
 |------|------|
+| [time_sleep.this](https://registry.terraform.io/providers/hashicorp/time/0.9.1/docs/resources/sleep) | resource |
 | [yandex_billing_cloud_binding.this](https://registry.terraform.io/providers/yandex-cloud/yandex/0.93/docs/resources/billing_cloud_binding) | resource |
 | [yandex_organizationmanager_group.this](https://registry.terraform.io/providers/yandex-cloud/yandex/0.93/docs/resources/organizationmanager_group) | resource |
 | [yandex_organizationmanager_group_membership.this](https://registry.terraform.io/providers/yandex-cloud/yandex/0.93/docs/resources/organizationmanager_group_membership) | resource |
