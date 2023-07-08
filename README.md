@@ -73,4 +73,6 @@ No modules.
 |------|-------------|
 | <a name="output_cloud_id"></a> [cloud\_id](#output\_cloud\_id) | ID of the Cloud. |
 | <a name="output_cloud_name"></a> [cloud\_name](#output\_cloud\_name) | The name of the Cloud. |
+| <a name="output_folders"></a> [folders](#output\_folders) | Сloud folders. |
+| <a name="output_groups"></a> [groups](#output\_groups) | Сloud groups. |
 <!-- END_TF_DOCS -->

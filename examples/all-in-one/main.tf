@@ -36,32 +36,32 @@ module "cloud" {
 
   groups = [
     {
-      name        = "example-group-1"
-      description = "Example group 1"
-      cloud_roles = ["kms.admin", "storage.admin"]
+      name        = "k8s-admins"
+      description = "Kubernetes infrastructure administrators"
+      cloud_roles = ["k8s.admin"]
       folder_roles = [
         {
           folder_name = "example-folder-1"
-          roles       = ["k8s.admin", "alb.editor"]
+          roles       = ["k8s.tunnelClusters.agent", "container-registry.images.puller"]
         },
         {
           folder_name = "example-folder-2"
-          roles       = ["k8s.admin", "alb.editor"]
+          roles       = ["k8s.clusters.agent", "container-registry.images.puller", "vpc.publicAdmin"]
         }
       ]
       members = ["user1_ids_here", "user2_ids_here"]
     },
     {
-      name        = "example-group-2"
-      description = "Example group 2"
-      cloud_roles = ["storage.admin", "vpc.admin"]
+      name        = "developers"
+      description = "Developers"
+      cloud_roles = ["k8s.cluster-api.viewer"]
       folder_roles = [
         {
-          folder_name = "example-folder-2"
-          roles       = ["compute.viewer", "container-registry.admin"]
+          folder_name = "example-folder-1"
+          roles       = ["container-registry.images.pusher", "logging.reader", "monitoring.viewer"]
         }
       ]
-      members = ["user2_ids_here", "user3_ids_here"]
+      members = ["user3_ids_here", "user4_ids_here"]
     }
   ]
 }

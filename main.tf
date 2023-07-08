@@ -23,8 +23,8 @@ locals {
   cloud_iam_bindings = flatten([
     for group in var.groups : [
       for role in group.cloud_roles : {
-        "group"      = group.name
-        "cloud_role" = role
+        group      = group.name
+        cloud_role = role
       }
     ]
   ])
@@ -58,9 +58,9 @@ locals {
     for group in var.groups : [
       for folder in group.folder_roles : [
         for role in folder.roles : {
-          "folder"      = folder.folder_name
-          "group"       = group.name
-          "folder_role" = role
+          folder      = folder.folder_name
+          group       = group.name
+          folder_role = role
         }
       ]
     ]
@@ -135,7 +135,8 @@ resource "yandex_resourcemanager_folder_iam_member" "this" {
     precondition {
       condition     = contains([for folder in var.folders : folder.name], each.value.folder)
       error_message = <<EOF
-        Cannot assign folder role "${each.value.folder_role}" for group "${each.value.group}". Folder "${each.value.folder}" not found in "folders" variable.
+        Cannot assign folder role "${each.value.folder_role}" for group "${each.value.group}".
+        Folder "${each.value.folder}" not found in "folders" variable.
       EOF
     }
   }
