@@ -81,7 +81,7 @@ resource "yandex_billing_cloud_binding" "this" {
 
 # Temporary workaround until the issue of cloud creation by the Terraform provider is resolved.
 resource "time_sleep" "this" {
-  create_duration = "60s"
+  create_duration = var.delay_after_cloud_create
 
   depends_on = [yandex_resourcemanager_cloud.this]
 }

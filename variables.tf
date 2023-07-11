@@ -37,6 +37,16 @@ variable "billing_account_id" {
   default     = null
 }
 
+variable "delay_after_cloud_create" {
+  description = <<EOF
+    Set a delay before creating folders after cloud creation.
+    Temporary workaround until the issue of cloud creation by the Terraform provider is resolved.
+  EOF
+  nullable    = false
+  type        = string
+  default     = "60s"
+}
+
 variable "folders" {
   description = <<EOF
     (Optional) List of objects of the Cloud Folders.
