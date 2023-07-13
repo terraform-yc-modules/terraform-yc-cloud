@@ -7,25 +7,43 @@ variable "organization_id" {
   default     = null
 }
 
-variable "cloud_name" {
+variable "cloud" {
   description = <<EOF
-    (Required) The name of the Cloud.
-    For more information see https://cloud.yandex.com/en/docs/resource-manager/concepts/resources-hierarchy#cloud
+    (Required) Configuration of the Cloud.
+    For more information see https://cloud.yandex.com/en/docs/resource-manager/concepts/resources-hierarchy#cloud.
+
+    Configuration attributes:
+      existing_cloud_id - (Required, unless using name) Allows to specify an existing Cloud ID. Conflicts with `name`.
+      name              - (Required, unless using existing_cloud_id) The name of the Cloud. Conflicts with `existing_cloud_id`.
+      description       - (Optional) Description of the Cloud.
+      labels            - (Optional) A set of key/value label pairs to assign to the Cloud.
+
+    At least one of `existing_cloud_id`, `name` must be specified.
   EOF
-  type        = string
-  default     = null
-}
-
-variable "cloud_description" {
-  description = "(Optional) A description of the Cloud."
-  type        = string
-  default     = null
-}
-
-variable "cloud_labels" {
-  description = "(Optional) A set of key/value label pairs to assign to the Cloud."
-  type        = map(string)
-  default     = {}
+  nullable    = false
+  type = object({
+    existing_cloud_id = optional(string)
+    name              = optional(string)
+    description       = optional(string)
+    labels            = optional(map(string))
+  })
+  validation {
+    condition     = !(var.cloud.existing_cloud_id == null && var.cloud.name == null)
+    error_message = "One of \"name\" or \"existing_cloud_id\" should be specified in \"cloud\"."
+  }
+  validation {
+    condition     = !(var.cloud.existing_cloud_id != null && var.cloud.name != null)
+    error_message = "Attributes \"name\" and \"existing_cloud_id\" conflicts. Only one of them should be used."
+  }
+  validation {
+    condition     = !(var.cloud.name == null && var.cloud.description != null)
+    error_message = "Cannot use attribute \"description\" when attribute \"name\" is not set."
+  }
+  validation {
+    condition     = !(var.cloud.name == null && var.cloud.labels != null)
+    error_message = "Cannot use attribute \"labels\" when attribute \"name\" is not set."
+  }
+  default = {}
 }
 
 variable "billing_account_id" {

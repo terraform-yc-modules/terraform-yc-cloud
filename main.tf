@@ -1,4 +1,6 @@
 locals {
+  cloud_id = var.cloud.existing_cloud_id == null ? yandex_resourcemanager_cloud.this[0].id : var.cloud.existing_cloud_id
+
   # Creates a list of objects.
   # In each object creates a key/value mapping of the group name and cloud role of the group.
   # Result example:
@@ -67,20 +69,28 @@ locals {
   ])
 }
 
+data "yandex_resourcemanager_cloud" "this" {
+  count    = var.cloud.existing_cloud_id != null ? 1 : 0
+  cloud_id = var.cloud.existing_cloud_id
+}
+
 resource "yandex_resourcemanager_cloud" "this" {
-  name            = var.cloud_name
-  description     = var.cloud_description
+  count           = var.cloud.existing_cloud_id == null ? 1 : 0
+  name            = var.cloud.name
+  description     = var.cloud.description
   organization_id = var.organization_id
-  labels          = var.cloud_labels
+  labels          = var.cloud.labels
 }
 
 resource "yandex_billing_cloud_binding" "this" {
+  count              = var.cloud.existing_cloud_id == null ? 1 : 0
   billing_account_id = var.billing_account_id
-  cloud_id           = yandex_resourcemanager_cloud.this.id
+  cloud_id           = yandex_resourcemanager_cloud.this[0].id
 }
 
 # Temporary workaround until the issue of cloud creation by the Terraform provider is resolved.
 resource "time_sleep" "this" {
+  count           = var.cloud.existing_cloud_id == null ? 1 : 0
   create_duration = var.delay_after_cloud_create
 
   depends_on = [yandex_resourcemanager_cloud.this]
@@ -91,7 +101,7 @@ resource "yandex_resourcemanager_folder" "this" {
     for folder in var.folders : folder.name => folder
   }
 
-  cloud_id    = yandex_resourcemanager_cloud.this.id
+  cloud_id    = local.cloud_id
   name        = each.value.name
   description = each.value.description
   labels      = each.value.labels
@@ -117,7 +127,7 @@ resource "yandex_resourcemanager_cloud_iam_member" "this" {
     for item in local.cloud_iam_bindings : "group:${item.group}:role:${item.cloud_role}" => item
   }
 
-  cloud_id = yandex_resourcemanager_cloud.this.id
+  cloud_id = local.cloud_id
   role     = each.value.cloud_role
   member   = "group:${yandex_organizationmanager_group.this[each.value.group].id}"
 }

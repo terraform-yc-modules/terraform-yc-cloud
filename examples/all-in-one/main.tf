@@ -17,9 +17,10 @@ module "cloud" {
   organization_id    = "organization_id_here"
   billing_account_id = "billing_account_id_here"
 
-
-  cloud_name        = "example-cloud"
-  cloud_description = "Example cloud"
+  cloud = {
+    name        = "example-cloud"
+    description = "Example cloud"
+  }
 
 
   folders = [

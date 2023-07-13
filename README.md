@@ -2,7 +2,7 @@
 
 ## Features
 
-- Create a cloud
+- Create a cloud or use an existing one
 - Сreate cloud folders
 - Сreate organization groups
 - Add users to organization groups
@@ -54,15 +54,14 @@ No modules.
 | [yandex_resourcemanager_cloud_iam_member.this](https://registry.terraform.io/providers/yandex-cloud/yandex/0.93/docs/resources/resourcemanager_cloud_iam_member) | resource |
 | [yandex_resourcemanager_folder.this](https://registry.terraform.io/providers/yandex-cloud/yandex/0.93/docs/resources/resourcemanager_folder) | resource |
 | [yandex_resourcemanager_folder_iam_member.this](https://registry.terraform.io/providers/yandex-cloud/yandex/0.93/docs/resources/resourcemanager_folder_iam_member) | resource |
+| [yandex_resourcemanager_cloud.this](https://registry.terraform.io/providers/yandex-cloud/yandex/0.93/docs/data-sources/resourcemanager_cloud) | data source |
 
 ## Inputs
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | <a name="input_billing_account_id"></a> [billing\_account\_id](#input\_billing\_account\_id) | (Required) ID of billing account to bind Cloud to.<br>    For more information see https://cloud.yandex.com/en/docs/billing/concepts/billing-account. | `string` | `null` | no |
-| <a name="input_cloud_description"></a> [cloud\_description](#input\_cloud\_description) | (Optional) A description of the Cloud. | `string` | `null` | no |
-| <a name="input_cloud_labels"></a> [cloud\_labels](#input\_cloud\_labels) | (Optional) A set of key/value label pairs to assign to the Cloud. | `map(string)` | `{}` | no |
-| <a name="input_cloud_name"></a> [cloud\_name](#input\_cloud\_name) | (Required) The name of the Cloud.<br>    For more information see https://cloud.yandex.com/en/docs/resource-manager/concepts/resources-hierarchy#cloud | `string` | `null` | no |
+| <a name="input_cloud"></a> [cloud](#input\_cloud) | (Required) Configuration of the Cloud.<br>    For more information see https://cloud.yandex.com/en/docs/resource-manager/concepts/resources-hierarchy#cloud.<br><br>    Configuration attributes:<br>      existing\_cloud\_id - (Required, unless using name) Allows to specify an existing Cloud ID. Conflicts with `name`.<br>      name              - (Required, unless using existing\_cloud\_id) The name of the Cloud. Conflicts with `existing_cloud_id`.<br>      description       - (Optional) Description of the Cloud.<br>      labels            - (Optional) A set of key/value label pairs to assign to the Cloud.<br><br>    At least one of `existing_cloud_id`, `name` must be specified. | <pre>object({<br>    existing_cloud_id = optional(string)<br>    name              = optional(string)<br>    description       = optional(string)<br>    labels            = optional(map(string))<br>  })</pre> | `{}` | no |
 | <a name="input_delay_after_cloud_create"></a> [delay\_after\_cloud\_create](#input\_delay\_after\_cloud\_create) | Set a delay before creating folders after cloud creation.<br>    Temporary workaround until the issue of cloud creation by the Terraform provider is resolved. | `string` | `"60s"` | no |
 | <a name="input_folders"></a> [folders](#input\_folders) | (Optional) List of objects of the Cloud Folders.<br>    For more information see https://cloud.yandex.com/en/docs/resource-manager/concepts/resources-hierarchy#folder<br><br>    Configuration attributes:<br>      name        - (Required) The name of the Folder.<br>      description - (Optional) A description of the Folder.<br>      labels      - (Optional) A set of key/value label pairs to assign to the Folder. | <pre>list(object({<br>    name        = string<br>    description = optional(string)<br>    labels      = optional(map(string))<br>  }))</pre> | `[]` | no |
 | <a name="input_groups"></a> [groups](#input\_groups) | (Optional) List of objects of the Organization Groups.<br>    For more information see https://cloud.yandex.com/en/docs/organization/manage-groups.<br><br>    Configuration attributes:<br>      name         - (Required) The name of the group. Must be unique in each object.<br>      description  - (Optional) A description of the group.<br>      members      - (Optional) List of group members.<br>      cloud\_roles  - (Optional) List of cloud roles for the group.<br>      folder\_roles - (Optional) List of objects with folder name and group roles for this folder.<br><br>    Objects in the `folder_roles` supports the following attributes:<br>      folder\_name - (Required) The name of the folder.<br>      roles       - (Optional) List of roles for the group. | <pre>list(object({<br>    name        = string<br>    description = optional(string)<br>    members     = optional(set(string), [])<br>    cloud_roles = optional(set(string), [])<br>    folder_roles = optional(list(object({<br>      folder_name = string<br>      roles       = set(string)<br>    })), [])<br>  }))</pre> | `[]` | no |
