@@ -57,8 +57,8 @@ variable "billing_account_id" {
 
 variable "delay_after_cloud_create" {
   description = <<EOF
-    Set a delay before creating folders after cloud creation.
-    Temporary workaround until the issue of cloud creation by the Terraform provider is resolved.
+    Activation buffer after binding a new cloud to billing, before folders, cloud IAM assignments and cloud_id consumers.
+    Defaults to 180s; use 0s to disable the buffer. Existing clouds are not delayed. This is not an API readiness probe.
   EOF
   nullable    = false
   type        = string
@@ -67,7 +67,7 @@ variable "delay_after_cloud_create" {
 
 variable "folders" {
   description = <<EOF
-    (Optional) List of objects of the Cloud Folders.
+    (Optional) Map of Cloud Folders, indexed by stable Terraform resource keys.
     For more information see https://cloud.yandex.com/en/docs/resource-manager/concepts/resources-hierarchy#folder
   
     Configuration attributes:
@@ -76,7 +76,7 @@ variable "folders" {
       labels      - (Optional) A set of key/value label pairs to assign to the Folder.
   EOF
   nullable    = false
-  type = list(object({
+  type = map(object({
     name        = string
     description = optional(string)
     labels      = optional(map(string))
@@ -89,35 +89,36 @@ variable "folders" {
     condition     = length([for folder in var.folders : folder.name]) == length(distinct([for folder in var.folders : folder.name]))
     error_message = "Folder name must be unique."
   }
-  default = []
+  validation {
+    condition = alltrue([
+      for key in keys(var.folders) : trimspace(key) != "" && length(regexall(":", key)) == 0
+    ])
+    error_message = "Folder key must not be blank or contain a colon (:)."
+  }
+  default = {}
 }
 
 variable "groups" {
   description = <<EOF
-    (Optional) List of objects of the Organization Groups.
+    (Optional) Map of Organization Groups, indexed by stable Terraform resource keys.
     For more information see https://cloud.yandex.com/en/docs/organization/manage-groups.
 
     Configuration attributes:
-      name         - (Required) The name of the group. Must be unique in each object.
-      description  - (Optional) A description of the group.
-      members      - (Optional) List of group members.
-      cloud_roles  - (Optional) List of cloud roles for the group.
-      folder_roles - (Optional) List of objects with folder name and group roles for this folder.
-    
-    Objects in the `folder_roles` supports the following attributes:
-      folder_name - (Required) The name of the folder.
-      roles       - (Optional) List of roles for the group.
+      name           - (Required) The name of the group. Must be unique in each object.
+      description    - (Optional) A description of the group.
+      manage_members - (Optional) Whether to manage declared group memberships. Defaults to false and must be known at plan time.
+      members        - (Optional) Set of managed member IDs. Required when manage_members is true; use [] for an empty managed set. Omit otherwise.
+      cloud_roles    - (Optional) List of cloud roles for the group.
+      folder_roles   - (Optional) Map of folder keys to sets of roles for the group. Each key must exist in folders.
   EOF
   nullable    = false
-  type = list(object({
-    name        = string
-    description = optional(string)
-    members     = optional(set(string), [])
-    cloud_roles = optional(set(string), [])
-    folder_roles = optional(list(object({
-      folder_name = string
-      roles       = set(string)
-    })), [])
+  type = map(object({
+    name           = string
+    description    = optional(string)
+    manage_members = optional(bool, false)
+    members        = optional(set(string))
+    cloud_roles    = optional(set(string), [])
+    folder_roles   = optional(map(set(string)), {})
   }))
 
   # Get a list of group names from each group object.
@@ -127,15 +128,33 @@ variable "groups" {
     condition     = length([for group in var.groups : group.name]) == length(distinct([for group in var.groups : group.name]))
     error_message = "Attribute \"name\" must be unique."
   }
-
-  # For each group object, get a list of folder names from each folder_roles object.
-  # Compare the length of the list with the length of the unique values in the list.
-  # They must be equal for each group object.
   validation {
-    condition = alltrue(flatten([for group in var.groups :
-      length([for folder_role in group.folder_roles : folder_role.folder_name]) == length(distinct([for folder_role in group.folder_roles : folder_role.folder_name]))
-    ]))
-    error_message = "Attribute \"folder_name\" in each \"folder_roles\" object must be unique."
+    condition = alltrue([
+      for key in keys(var.groups) : trimspace(key) != "" && length(regexall(":", key)) == 0
+    ])
+    error_message = "Group key must not be blank or contain a colon (:)."
   }
-  default = []
+  validation {
+    condition = alltrue([
+      for group in var.groups : group.manage_members ? group.members != null : group.members == null
+    ])
+    error_message = "Set manage_members = true and provide members (use [] for an empty managed set); otherwise omit members or set it to null."
+  }
+  validation {
+    condition = alltrue(flatten([
+      for group in var.groups : [
+        for folder_key in keys(group.folder_roles) : trimspace(folder_key) != ""
+      ]
+    ]))
+    error_message = "Folder keys in folder_roles must not be blank."
+  }
+  validation {
+    condition = alltrue(flatten([
+      for group in var.groups : [
+        for roles in values(group.folder_roles) : roles != null
+      ]
+    ]))
+    error_message = "Role sets in folder_roles must not be null. Use an empty set to assign no roles."
+  }
+  default = {}
 }

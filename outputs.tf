@@ -1,6 +1,7 @@
 output "cloud_id" {
   description = "ID of the Cloud."
   value       = var.cloud.existing_cloud_id != null ? var.cloud.existing_cloud_id : yandex_resourcemanager_cloud.this[0].id
+  depends_on  = [time_sleep.this]
 }
 
 output "cloud_name" {
@@ -9,17 +10,17 @@ output "cloud_name" {
 }
 
 output "folders" {
-  description = "The name of the Сloud folders."
-  value = [for folder in var.folders : {
-    id   = yandex_resourcemanager_folder.this[folder.name].id
+  description = "Folder IDs and names, sorted by map key."
+  value = [for key, folder in var.folders : {
+    id   = yandex_resourcemanager_folder.this[key].id
     name = folder.name
   }]
 }
 
 output "groups" {
-  description = "The name of the groups."
-  value = [for group in var.groups : {
-    id   = yandex_organizationmanager_group.this[group.name].id
+  description = "Group IDs and names, sorted by map key."
+  value = [for key, group in var.groups : {
+    id   = yandex_organizationmanager_group.this[key].id
     name = group.name
   }]
 }
